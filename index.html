@@ -1,0 +1,502 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#10151d">
+<meta name="description" content="隨時寫一點 C++。支援手機、平板的線上程式編輯器，提供語法高亮、範例、儲存載入與真實線上編譯。">
+<title>C++ Pocket Studio — 隨時寫一點 C++</title>
+<style>
+:root{color-scheme:dark;--bg:#10151d;--panel:#171e29;--editor:#121923;--raised:#202a38;--line:#2a3544;--ink:#e7edf6;--muted:#97a6bb;--mint:#9fe9cc;--mint-dark:#182e2a;--amber:#edc68b;--blue:#9fc3fa;--red:#ff9eaa;--mono:"Cascadia Code","SFMono-Regular",Consolas,"Liberation Mono",monospace;--code-size:14px}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:14px/1.55 system-ui,-apple-system,"Segoe UI","Noto Sans TC",sans-serif}
+button,input,textarea,select{font:inherit}
+button,a,input,select,textarea{-webkit-tap-highlight-color:transparent}
+button{cursor:pointer}
+button:disabled{cursor:wait;opacity:.55}
+button:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--mint);outline-offset:3px}
+button{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:9px;min-height:42px;padding:8px 13px;display:inline-flex;gap:8px;align-items:center;justify-content:center;white-space:nowrap;transition:background .15s,border-color .15s}
+button:hover{background:var(--raised);border-color:#526277}
+button.primary{background:var(--mint);color:#122a23;border-color:var(--mint);font-weight:750}
+button.primary:hover{background:#b9f7df}
+button.quiet{border-color:transparent;background:transparent}
+button.quiet:hover{background:var(--raised)}
+svg.icon{width:17px;height:17px;flex:none;stroke:currentColor;stroke-width:1.65;fill:none;stroke-linecap:round;stroke-linejoin:round}
+a{color:var(--mint);text-underline-offset:3px}
+.app{max-width:1660px;margin:auto;padding:24px 30px 18px}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:25px}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-mark{width:42px;height:42px;border:1px solid #507467;background:var(--mint-dark);color:var(--mint);display:grid;place-items:center;border-radius:13px;font:700 17px var(--mono)}
+.brand h1{font-size:18px;letter-spacing:-.4px;margin:0;line-height:1.4}
+.brand h1 span{font-weight:400;color:var(--muted)}
+.brand p{font-size:12px;margin:2px 0 0;color:var(--muted)}
+.top-actions{display:flex;align-items:center;gap:14px}
+.network{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:12px}
+.dot{width:6px;height:6px;display:inline-block;border-radius:50%;background:var(--mint)}
+.network.offline .dot{background:var(--amber)}
+.intro{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}
+.eyebrow{font:11px var(--mono);letter-spacing:2px;color:var(--mint);margin-bottom:8px}
+.intro h2{margin:0;font-size:clamp(24px,2.8vw,34px);font-weight:650;letter-spacing:-1px;line-height:1.4}
+.intro p{color:var(--muted);margin:7px 0 0;font-size:13px}
+.mode-note{display:flex;align-items:center;gap:10px;max-width:300px;color:var(--muted);font-size:12px}
+.mode-note svg{color:var(--mint);width:22px;height:22px}
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.toolbar .spacer{flex:1}
+.select-shell{position:relative;display:flex;align-items:center}
+select{color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:9px;min-height:42px;padding:8px 30px 8px 12px;max-width:100%}
+.provider-select{font-size:12px;min-width:190px}
+.run-key{padding:1px 5px;border:1px solid #4a8b73;border-radius:4px;font:11px var(--mono);margin-left:4px}
+.workspace{display:grid;grid-template-columns:minmax(0,1.65fr) minmax(310px,1fr);gap:16px;align-items:stretch}
+.panel{border:1px solid var(--line);border-radius:13px;background:var(--panel);overflow:hidden;min-width:0}
+.editor-panel{display:flex;flex-direction:column;min-height:610px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:0 17px;min-height:52px;border-bottom:1px solid var(--line)}
+.file-info{display:flex;align-items:center;gap:9px;min-width:0}
+.cpp-icon{font:700 11px var(--mono);color:var(--blue)}
+.filename{border:0;background:transparent;color:var(--ink);font:13px var(--mono);width:160px;max-width:100%;padding:7px 3px;border-radius:3px}
+.file-dirty{width:5px;height:5px;background:var(--amber);border-radius:50%;flex:none}
+.tag{font:10px var(--mono);letter-spacing:.5px;color:var(--muted);border:1px solid var(--line);border-radius:5px;padding:3px 6px;white-space:nowrap}
+.editor-tools{display:flex;align-items:center;gap:3px}
+.editor-tools button{min-height:32px;min-width:32px;padding:4px;font-size:12px}
+.editor-shell{position:relative;background:var(--editor);flex:1;min-height:440px;overflow:hidden}
+.gutter{position:absolute;left:0;top:0;bottom:0;width:51px;overflow:hidden;border-right:1px solid #202b3a;background:var(--editor);color:#65758c;user-select:none;pointer-events:none}
+.gutter-inner{padding:20px 12px 20px 0;text-align:right;font:var(--code-size)/1.7 var(--mono);font-variant-ligatures:none;white-space:pre}
+.code-wrap{position:absolute;inset:0 0 0 52px;overflow:hidden}
+#highlight,#code{position:absolute;inset:0;margin:0;border:0;border-radius:0;padding:20px 18px;width:100%;height:100%;font:var(--code-size)/1.7 var(--mono);font-variant-ligatures:none;letter-spacing:0;tab-size:4;white-space:pre;word-wrap:normal;overflow-wrap:normal;overflow:auto}
+#highlight{color:#d8e3f2;background:transparent;pointer-events:none;scrollbar-width:none}
+#highlight::-webkit-scrollbar{display:none}
+#code{background:transparent;color:transparent;caret-color:var(--mint);-webkit-text-fill-color:transparent;resize:none;outline:none;-webkit-overflow-scrolling:touch}
+#code::selection{background:rgba(126,178,231,.27);color:transparent}
+.tok-comment{color:#788b9e;font-style:italic}
+.tok-string{color:#a7dba4}
+.tok-keyword{color:#bbadf7}
+.tok-number{color:#edc68b}
+.tok-preprocessor{color:#9fc3fa}
+.tok-function{color:#a3d8f4}
+.tok-operator{color:#d6a3b5}
+.editor-foot{min-height:35px;border-top:1px solid var(--line);padding:7px 14px;display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;background:var(--panel)}
+.save-state{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.save-state.saved{color:#a4c8ba}
+.touchbar{display:flex;gap:4px;padding:8px 11px;overflow-x:auto;border-top:1px solid var(--line);background:#18212d;scrollbar-width:thin}
+.touchbar button{font:12px var(--mono);min-width:37px;min-height:34px;border-radius:6px;background:var(--raised);padding:6px 8px}
+.touchbar .wide{min-width:52px}
+.right-stack{display:grid;grid-template-rows:205px minmax(350px,1fr);gap:16px;min-width:0}
+.panel-title{font-size:13px;font-weight:600;display:flex;gap:9px;align-items:center}
+.panel-title svg{color:var(--muted)}
+.panel-caption{font-size:10px;letter-spacing:1px;color:#71839a;font-family:var(--mono)}
+.stdin-panel{display:flex;flex-direction:column}
+#stdin{flex:1;min-height:85px;resize:none;border:0;outline:none;background:var(--editor);color:#dce5f2;padding:16px 18px;font:14px/1.6 var(--mono);border-radius:0}
+#stdin:focus{box-shadow:inset 0 0 0 1px #567b6f}
+#stdin::placeholder{color:#68798f}
+.input-tip{font-size:11px;padding:7px 17px;color:var(--muted);background:var(--editor)}
+.results{display:flex;flex-direction:column;min-height:0}
+.result-header{min-height:52px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding:0 10px 0 17px;gap:5px}
+.tabs{display:flex;align-items:stretch;gap:18px;height:52px}
+.tabs button{border:0;border-radius:0;background:transparent;font-size:12px;padding:0;position:relative;color:var(--muted);gap:5px;min-height:44px}
+.tabs button[aria-selected=true]{color:var(--ink)}
+.tabs button[aria-selected=true]:after{position:absolute;bottom:0;left:0;right:0;content:"";height:2px;background:var(--mint)}
+.count{font:10px var(--mono);background:var(--raised);padding:0 5px;border-radius:4px}
+.result-controls{display:flex;gap:0}
+.result-controls button{padding:6px;min-width:32px;min-height:32px}
+.result-body{position:relative;background:var(--editor);flex:1;min-height:220px;display:flex;flex-direction:column}
+.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:24px;color:var(--muted)}
+.empty-symbol{width:47px;height:47px;display:grid;place-items:center;border:1px solid #314536;background:#192822;border-radius:15px;color:var(--mint);font:20px var(--mono);margin-bottom:13px}
+.empty-state strong{font-size:13px;color:#c3cfdc;font-weight:500}
+.empty-state p{font-size:12px;margin:6px 0 0;max-width:220px;line-height:1.7}
+.output{white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.7 var(--mono);color:#dce9e0;margin:0;padding:17px 18px;overflow:auto;flex:1;max-height:470px;tab-size:4}
+.output.error{color:var(--red)}
+.result-status{padding:9px 15px;border-top:1px solid var(--line);font-size:11px;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:37px}
+.status-main{display:flex;align-items:center;gap:7px}
+.status-dot{width:6px;height:6px;background:#66768d;border-radius:50%}
+.result-status.success .status-dot{background:var(--mint)}
+.result-status.error .status-dot{background:var(--red)}
+.result-status.running .status-dot{background:var(--amber);animation:pulse 1s ease-in-out infinite}
+.result-status.success .status-text{color:var(--mint)}
+.result-status.error .status-text{color:var(--red)}
+@keyframes pulse{50%{opacity:.25}}
+.privacy{font-size:11px;color:var(--muted);display:flex;align-items:start;gap:8px;margin:14px 2px 0;line-height:1.8}
+.privacy svg{width:14px;height:14px;flex:none;margin-top:3px}
+.privacy a{color:#b4c4d7}
+.bottom{display:flex;justify-content:space-between;gap:15px;align-items:center;margin:20px 2px 0;color:#75879c;font-size:11px}
+.bottom .wordmark{letter-spacing:2px;font:10px var(--mono)}
+.view-tabs{display:none}
+.hidden,[hidden]{display:none!important}
+.toast{position:fixed;bottom:max(24px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);background:#e2f5ec;color:#153a2d;padding:12px 20px;border-radius:10px;box-shadow:0 8px 40px #0005;z-index:30;max-width:calc(100vw - 32px);font-size:13px;text-align:center}
+dialog{color:var(--ink);background:var(--panel);border:1px solid #435367;border-radius:16px;max-width:580px;width:calc(100% - 32px);max-height:85dvh;padding:24px;box-shadow:0 20px 100px #0007}
+dialog::backdrop{background:#080d15c9;backdrop-filter:blur(3px)}
+.dialog-head{display:flex;justify-content:space-between;gap:10px;align-items:start}
+dialog h2{margin:4px 0 18px;font-size:20px}
+dialog h3{font-size:14px;margin:20px 0 6px}
+dialog p,dialog li{color:#b8c5d6;font-size:13px}
+dialog ul{padding-left:20px}
+.help-tag{display:inline-block;padding:3px 8px;background:var(--mint-dark);color:var(--mint);border-radius:5px;font-size:11px;margin-bottom:8px}
+.dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:24px}
+.shortcuts{display:grid;grid-template-columns:1fr auto;gap:8px;font-size:12px;color:var(--muted);padding:12px;background:var(--editor);border-radius:8px}
+kbd{font:11px var(--mono);color:var(--ink)}
+@media(min-width:1600px){.editor-panel{min-height:690px}.right-stack{grid-template-rows:225px minmax(410px,1fr)}}
+@media(max-width:1050px){.app{padding:20px}.workspace{grid-template-columns:minmax(0,1.25fr) minmax(285px,1fr)}.provider-select{min-width:175px}.run-key{display:none}.toolbar{gap:6px}.toolbar button{padding:8px 10px}.mode-note{display:none}.intro{margin-bottom:18px}.editor-panel{min-height:590px}}
+@media(min-width:761px) and (max-width:950px){.toolbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.toolbar .spacer{display:none}.toolbar select,.toolbar button{width:100%;min-width:0;min-height:44px}.toolbar .provider-select{font-size:12px}}
+@media(max-width:760px){
+ .app{padding:16px 12px max(20px,env(safe-area-inset-bottom))}.topbar{margin-bottom:22px}.brand h1{font-size:16px}.brand p{font-size:10px}.brand-mark{width:37px;height:37px;border-radius:11px}.top-actions{gap:3px}.network{font-size:0;gap:0;margin-right:4px}.network .dot{width:7px;height:7px}.top-actions button{font-size:12px;min-height:40px;padding:7px 9px}.intro{margin:0 3px 20px}.intro h2{font-size:27px}.intro p{font-size:12px}.eyebrow{font-size:9px;letter-spacing:1.5px}
+ .toolbar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.toolbar .select-shell{grid-column:1}.toolbar select{width:100%;min-width:0;font-size:12px;padding-left:8px}.toolbar button{width:100%;font-size:12px;gap:5px;padding:8px 6px;min-height:44px}.toolbar .spacer{display:none}.toolbar .backup{grid-column:1}.toolbar .provider-shell{grid-column:2}.toolbar #run{grid-column:3}.toolbar svg{width:15px;height:15px}
+ .view-tabs{display:flex;gap:6px;padding:5px;background:#0d1219;border:1px solid #252f3e;border-radius:10px;margin:15px 0 10px}
+ .view-tabs button{flex:1;min-height:40px;border:0;background:transparent;color:var(--muted);border-radius:7px;font-size:12px}
+ .view-tabs button[aria-selected=true]{background:var(--raised);color:var(--mint)}
+ .workspace{display:block}.editor-panel{min-height:0;height:65dvh;min-height:420px}.editor-shell{min-height:250px}.right-stack{display:none;grid-template-rows:200px minmax(330px,1fr);gap:12px}.workspace[data-view=results] .editor-panel{display:none}.workspace[data-view=results] .right-stack{display:grid}
+ .panel-head{padding:0 13px;min-height:48px}.filename{font-size:13px;width:135px}.editor-foot{font-size:10px;padding:8px 10px}.gutter{width:40px}.gutter-inner{padding-right:8px}.code-wrap{left:41px}#highlight,#code{padding:16px 12px;font-size:var(--code-size)}.gutter-inner{padding-top:16px}#stdin{font-size:16px}.touchbar{padding:8px;gap:5px}.touchbar button{min-width:39px;min-height:40px}.touchbar .wide{min-width:48px}.privacy{font-size:10px;margin-top:12px}.bottom{font-size:10px;margin-top:18px}.bottom .wordmark{font-size:9px}.bottom .desktop-hint{display:none}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+<symbol id="i-play" viewBox="0 0 24 24"><path d="m8 5 11 7-11 7Z" fill="currentColor" stroke="none"/></symbol>
+<symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12m-5-5 5 5 5-5M4 16v4h16v-4"/></symbol>
+<symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7V5h7l2 3h9l-3 12H3Zm0 3h18"/></symbol>
+<symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></symbol>
+<symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M9 6V3h6v3M6 6l1 15h10l1-15M10 10v7m4-7v7"/></symbol>
+<symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a5 5 0 0 1-1-10 7 7 0 0 1 13 2 4 4 0 0 1-1 8M12 13v9m-3-3 3 3 3-3"/></symbol>
+<symbol id="i-terminal" viewBox="0 0 24 24"><path d="m5 6 5 6-5 6m8 0h6"/></symbol>
+<symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v1"/></symbol>
+<symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+<symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3m-4 5v2"/></symbol>
+<symbol id="i-code" viewBox="0 0 24 24"><path d="m8 7-5 5 5 5m8-10 5 5-5 5M14 4l-4 16"/></symbol>
+</defs></svg>
+<main class="app">
+ <header class="topbar">
+  <div class="brand"><div class="brand-mark" aria-hidden="true">C++</div><div><h1>Pocket <span>Studio</span></h1><p>你的隨身 C++ 練習空間</p></div></div>
+  <div class="top-actions"><span class="network" id="network"><span class="dot"></span><span id="network-text">已連上網路</span></span><button id="help-button" class="quiet"><svg class="icon"><use href="#i-info"/></svg>使用說明</button></div>
+ </header>
+ <section class="intro">
+  <div><div class="eyebrow">A LITTLE CODE, ANYWHERE.</div><h2>Where inspiration lies, there lies the program.</h2><p>寫下、執行、看見結果。從第一行 C++ 開始。</p></div>
+  <div class="mode-note"><svg class="icon"><use href="#i-cloud"/></svg><span>手機、平板、電腦皆可使用<br>無需安裝編譯器</span></div>
+ </section>
+ <div class="toolbar" aria-label="檔案與執行工具列">
+  <div class="select-shell"><select id="examples" aria-label="選擇程式範例"><option value="">程式範例</option><option value="hello">Hello, world!</option><option value="sum">兩數相加</option><option value="sort">數列排序</option><option value="loop">九九乘法表</option></select></div>
+  <button id="load"><svg class="icon"><use href="#i-folder"/></svg>開啟檔案</button>
+  <button id="save"><svg class="icon"><use href="#i-download"/></svg>儲存 .cpp</button>
+  <button id="backup" class="backup"><svg class="icon"><use href="#i-copy"/></svg>備份專案</button>
+  <span class="spacer"></span>
+  <div class="select-shell provider-shell"><select id="provider" class="provider-select" aria-label="線上編譯服務"><option value="wandbox">Wandbox · GCC 13</option><option value="godbolt">Compiler Explorer · GCC 14</option></select></div>
+  <button id="run" class="primary" aria-describedby="privacy-note"><svg class="icon"><use href="#i-play"/></svg><span id="run-label">執行程式</span><span class="run-key" aria-hidden="true">⌘ / Ctrl ↵</span></button>
+ </div>
+ <div class="view-tabs" role="tablist" aria-label="工作區"><button role="tab" id="view-code" aria-selected="true" aria-controls="editor-panel">01　程式碼</button><button role="tab" id="view-results" aria-selected="false" aria-controls="io-panel">02　輸入與結果 <span id="result-notification"></span></button></div>
+ <div class="workspace" id="workspace" data-view="code">
+  <section class="panel editor-panel" id="editor-panel" aria-label="C++ 程式碼編輯器">
+   <div class="panel-head"><div class="file-info"><span class="cpp-icon">C++</span><input id="filename" class="filename" aria-label="程式檔案名稱" value="main.cpp" maxlength="80" spellcheck="false"><span class="file-dirty" id="dirty" title="尚未下載這份程式碼" aria-label="尚未下載這份程式碼"></span></div><div class="editor-tools"><button id="font-smaller" class="quiet" aria-label="縮小程式字體">A−</button><button id="font-larger" class="quiet" aria-label="放大程式字體">A+</button><span class="tag">C++17</span></div></div>
+   <div class="editor-shell">
+    <div class="gutter" aria-hidden="true"><div class="gutter-inner" id="line-numbers">1</div></div>
+    <div class="code-wrap"><pre id="highlight" aria-hidden="true"></pre><textarea id="code" aria-label="C++ 程式碼" spellcheck="false" autocorrect="off" autocapitalize="off" autocomplete="off" wrap="off" translate="no"></textarea></div>
+   </div>
+   <div class="touchbar" aria-label="編輯快捷鍵">
+    <button type="button" data-edit="indent" class="wide" aria-label="增加縮排">⇥ 縮排</button><button type="button" data-edit="outdent" aria-label="減少縮排">⇤</button>
+    <button type="button" data-pair="{}" aria-label="插入大括號">{ }</button><button type="button" data-pair="()" aria-label="插入小括號">( )</button><button type="button" data-pair="[]" aria-label="插入中括號">[ ]</button><button type="button" data-pair='""' aria-label="插入雙引號">" "</button><button type="button" data-insert=";" aria-label="插入分號">;</button><button type="button" data-insert="&lt;&lt;" aria-label="插入輸出運算子">&lt;&lt;</button><button type="button" data-insert="&gt;&gt;" aria-label="插入輸入運算子">&gt;&gt;</button><button type="button" data-edit="undo" aria-label="復原">↶</button>
+   </div>
+   <div class="editor-foot"><span class="save-state" id="save-state">草稿儲存於此裝置</span><span id="cursor-state">Ln 1, Col 1 · UTF-8</span></div>
+  </section>
+  <div class="right-stack" id="io-panel">
+   <section class="panel stdin-panel">
+    <div class="panel-head"><div class="panel-title"><svg class="icon"><use href="#i-terminal"/></svg>標準輸入</div><span class="panel-caption">STDIN</span></div>
+    <textarea id="stdin" aria-label="標準輸入資料" spellcheck="false" autocorrect="off" autocapitalize="off" placeholder="在這裡輸入 cin 要讀取的資料…"></textarea>
+    <div class="input-tip">先填好資料，再執行。空白與換行皆可分隔數值。</div>
+   </section>
+   <section class="panel results" aria-label="執行結果">
+    <div class="result-header"><div class="tabs" role="tablist" aria-label="結果類型"><button role="tab" aria-selected="true" aria-controls="output" id="tab-output">輸出結果</button><button role="tab" aria-selected="false" aria-controls="diagnostics" id="tab-errors">診斷訊息 <span id="error-count" class="count">0</span></button></div><div class="result-controls"><button id="copy-output" class="quiet" aria-label="複製目前結果"><svg class="icon"><use href="#i-copy"/></svg></button><button id="clear-output" class="quiet" aria-label="清除結果"><svg class="icon"><use href="#i-trash"/></svg></button></div></div>
+    <div class="result-body">
+     <div class="empty-state" id="empty-state"><div class="empty-symbol">&gt;_</div><strong id="empty-title">準備好，讓程式跑起來。</strong><p id="empty-description">按下「執行程式」，<br>真實編譯後的結果會出現在這裡。</p></div>
+     <pre class="output" id="output" role="tabpanel" aria-labelledby="tab-output" tabindex="0" hidden></pre>
+     <pre class="output error" id="diagnostics" role="tabpanel" aria-labelledby="tab-errors" tabindex="0" hidden></pre>
+    </div>
+    <div class="result-status" id="result-status" role="status" aria-live="polite"><span class="status-main"><span class="status-dot"></span><span class="status-text" id="status-text">等待執行</span></span><span id="run-meta">GNU C++17</span></div>
+   </section>
+  </div>
+ </div>
+ <p class="privacy" id="privacy-note"><svg class="icon"><use href="#i-lock"/></svg><span>僅在按下執行時，將程式碼與輸入送至所選的 <a id="provider-link" href="https://wandbox.org/" target="_blank" rel="noopener noreferrer">Wandbox</a> 進行真實編譯。執行需要網路；草稿只存在此瀏覽器，不會跨裝置同步。</span></p>
+ <footer class="bottom"><span class="wordmark">MAKE ROOM FOR YOUR NEXT IDEA.</span><span class="desktop-hint">Tab 縮排 · Ctrl / ⌘ S 儲存 · Ctrl / ⌘ Enter 執行</span><span>C++17 · UTF-8</span></footer>
+</main>
+<input type="file" id="file-input" accept=".cpp,.cc,.cxx,.c,.h,.hpp,.txt,.json,text/plain,application/json" hidden>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+<dialog id="help-dialog" aria-labelledby="help-title">
+ <div class="dialog-head"><div><span class="help-tag">不用安裝，打開就能寫</span><h2 id="help-title">把 C++ 放進口袋。</h2></div><button class="quiet close-help" aria-label="關閉使用說明"><svg class="icon"><use href="#i-close"/></svg></button></div>
+ <p>手機、平板或電腦皆可使用。小螢幕可切換「程式碼」與「輸入與結果」，編輯器下方提供縮排與常用符號。</p>
+ <h3>如何執行？</h3><p>選擇範例或寫入 C++17 程式，先在標準輸入填好 <code>cin</code> 要讀取的資料，再按「執行程式」。這是一次讀入資料的批次執行，不提供即時互動終端機。</p>
+ <h3>真正的線上編譯</h3><p>瀏覽器會透過 HTTPS 呼叫所選服務的公開 API：Wandbox（GCC 13.2）或 Compiler Explorer（GCC 14.2），由對方的伺服器編譯與執行。瀏覽器本身不編譯 C++，你不需要架設後端或提供 API 金鑰。</p>
+ <p>按執行即會傳送目前程式碼與標準輸入，請勿放入密碼或機密資料。第三方服務可能忙碌、限流或暫時無法使用；出現連線錯誤時，可自行切換服務後重試。網站不會自動轉送至其他服務。</p>
+ <h3>儲存與換裝置</h3><p>「儲存 .cpp」下載原始碼；「備份專案」下載包含原始碼、輸入資料、檔名及服務選擇的 JSON。用「開啟檔案」即可載入兩種檔案。瀏覽器草稿會自動保存在此裝置；換裝置請使用專案備份，清除瀏覽器資料也會移除草稿。</p>
+ <h3>執行範圍</h3><p>單一原始碼檔案，最多 100 KB，輸入最多 32 KB。適合標準 C++ 練習；不支援額外套件、圖形介面、互動式輸入或自訂專案檔案。運算與資源限制由編譯服務決定，本頁最多等待 45 秒。取消等待不保證遠端工作立即停止。</p>
+ <div class="shortcuts"><span>下載程式碼</span><kbd>Ctrl / ⌘ S</kbd><span>編譯並執行</span><kbd>Ctrl / ⌘ Enter</kbd><span>增加／減少縮排</span><kbd>Tab / Shift Tab</kbd><span>離開程式編輯區</span><kbd>Esc，再按 Tab</kbd></div>
+ <div class="dialog-actions"><button class="primary close-help">開始寫程式</button></div>
+</dialog>
+<dialog id="replace-dialog" aria-labelledby="replace-title">
+ <h2 id="replace-title">要取代目前的內容嗎？</h2><p>載入後會取代目前的程式碼與草稿。若要保留，請先備份專案。</p>
+ <div class="dialog-actions"><button id="replace-backup">先備份</button><button id="replace-cancel">取消</button><button id="replace-confirm" class="primary">取代內容</button></div>
+</dialog>
+<script>
+'use strict';
+(() => {
+ const $ = id => document.getElementById(id);
+ const STORAGE = 'cpp-pocket-studio.v1';
+ const EXAMPLES = {
+  hello: {name:'hello.cpp',stdin:'',code:'#include <iostream>\nusing namespace std;\n\nint main() {\n    cout << "Hello, world!" << endl;\n    cout << "開始你的 C++ 旅程！" << endl;\n    return 0;\n}\n'},
+  sum: {name:'main.cpp',stdin:'12 30',code:'#include <iostream>\nusing namespace std;\n\n// 從右側「標準輸入」讀入兩個整數\nint main() {\n    int a, b;\n    cin >> a >> b;\n\n    // 試著換一組數字，再按下執行！\n    cout << "Hello, C++!" << endl;\n    cout << a << " + " << b << " = ";\n    cout << a + b << endl;\n\n    return 0;\n}\n'},
+  sort: {name:'sort.cpp',stdin:'5\n9 2 7 1 4',code:'#include <iostream>\n#include <vector>\n#include <algorithm>\nusing namespace std;\n\nint main() {\n    int n;\n    cin >> n;\n    if (n < 0 || n > 10000) return 1;\n\n    vector<int> numbers(n);\n    for (int &x : numbers) cin >> x;\n    sort(numbers.begin(), numbers.end());\n\n    for (int x : numbers) cout << x << " ";\n    cout << endl;\n    return 0;\n}\n'},
+  loop: {name:'multiplication.cpp',stdin:'',code:'#include <iostream>\n#include <iomanip>\nusing namespace std;\n\nint main() {\n    // 用兩層迴圈印出九九乘法表\n    for (int i = 1; i <= 9; ++i) {\n        for (int j = 1; j <= 9; ++j) {\n            cout << setw(4) << i * j;\n        }\n        cout << endl;\n    }\n    return 0;\n}\n'}
+ };
+ const PROVIDERS = {
+  wandbox: {name:'Wandbox',url:'https://wandbox.org/',compiler:'GCC 13.2'},
+  godbolt: {name:'Compiler Explorer',url:'https://godbolt.org/',compiler:'GCC 14.2'}
+ };
+ const code = $('code');
+ const minimumFontSize = matchMedia('(max-width:760px)').matches ? 16 : 12;
+ let savedCode = null, draftTimer, paintTimer, toastTimer, fontSize = Math.max(14,minimumFontSize), escapeTab = false;
+ let resultTab = 'output', result = null, requestController = null, requestId = 0, composing = false;
+ let undoStack = [], redoStack = [], lastSnapshot = null, pendingReplace = null;
+ let persistenceAvailable = true, isRestoring = false;
+ const escapeHTML = s => s.replace(/[&<>]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+ const words = new Set(('alignas alignof and and_eq asm auto bitand bitor bool break case catch char char16_t char32_t class compl const constexpr const_cast continue decltype default delete do double dynamic_cast else enum explicit export extern false float for friend goto if inline int long mutable namespace new noexcept not not_eq nullptr operator or or_eq private protected public register reinterpret_cast return short signed sizeof static static_assert static_cast struct switch template this thread_local throw true try typedef typeid typename union unsigned using virtual void volatile wchar_t while xor xor_eq').split(' '));
+ // Recognize strings/comments before keywords, and escape every token before rendering.
+ function highlight(source) {
+  const tokens = /R"([A-Za-z0-9_]{0,16})\([\s\S]*?\)\1"|\/\*[\s\S]*?(?:\*\/|$)|\/\/[^\n]*|"(?:\\[\s\S]|[^"\\])*"|'(?:\\[\s\S]|[^'\\])*'|^[ \t]*#[^\n]*|\b(?:0[xX][0-9a-fA-F]+|0[bB][01]+|\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)[uUlLfF]*\b|\b[A-Za-z_]\w*\b|[+*/%=!<>&|^~?:-]+/gm;
+  let html = '', last = 0, m;
+  while ((m = tokens.exec(source))) {
+   html += escapeHTML(source.slice(last,m.index));
+   const t=m[0]; let kind='';
+   if(t.startsWith('//')||t.startsWith('/*')) kind='comment';
+   else if(t.startsWith('"')||t.startsWith("'")||t.startsWith('R"')) kind='string';
+   else if(t.trimStart().startsWith('#')) kind='preprocessor';
+   else if(/^\d/.test(t)) kind='number';
+   else if(words.has(t)) kind='keyword';
+   else if(/^[A-Za-z_]/.test(t) && /^\s*\(/.test(source.slice(tokens.lastIndex))) kind='function';
+   else if(/^[+*/%=!<>&|^~?:-]/.test(t)) kind='operator';
+   html += kind ? '<span class="tok-'+kind+'">'+escapeHTML(t)+'</span>' : escapeHTML(t);
+   last=tokens.lastIndex;
+  }
+  return html+escapeHTML(source.slice(last))+'\n';
+ }
+ function render() {
+  $('highlight').innerHTML=highlight(code.value);
+  $('line-numbers').textContent=Array.from({length:code.value.split('\n').length},(_,i)=>i+1).join('\n');
+  syncScroll(); updateCursor(); $('dirty').hidden=code.value===savedCode;
+ }
+ function syncScroll(){ $('highlight').scrollTop=code.scrollTop; $('highlight').scrollLeft=code.scrollLeft; $('line-numbers').style.transform='translateY(-'+code.scrollTop+'px)'; }
+ function updateCursor(){
+  const before=code.value.slice(0,code.selectionStart), lines=before.split('\n');
+  $('cursor-state').textContent='Ln '+lines.length+', Col '+(Array.from(lines.at(-1)).length+1)+' · UTF-8';
+ }
+ function snapshot(){return {value:code.value,start:code.selectionStart,end:code.selectionEnd};}
+ function remember(){
+  const s=snapshot();
+  if(lastSnapshot && lastSnapshot.value!==s.value){undoStack.push(lastSnapshot);if(undoStack.length>100)undoStack.shift();redoStack=[];}
+  lastSnapshot=s;
+ }
+ function applySnapshot(s){code.value=s.value;code.setSelectionRange(s.start,s.end);lastSnapshot=s;render();scheduleSave();}
+ function undo(){if(!undoStack.length)return;redoStack.push(snapshot());applySnapshot(undoStack.pop());code.focus();}
+ function redo(){if(!redoStack.length)return;undoStack.push(snapshot());applySnapshot(redoStack.pop());code.focus();}
+ function edited(){
+  remember(); cancelAnimationFrame(paintTimer);paintTimer=requestAnimationFrame(render);scheduleSave();
+  if(result && !requestController) $('run-meta').textContent='程式已變更，請重新執行';
+ }
+ function project(){return {format:'cpp-pocket-studio',version:1,name:safeName($('filename').value),code:code.value,stdin:$('stdin').value,provider:$('provider').value,fontSize};}
+ function saveDraft(){
+  clearTimeout(draftTimer);
+  try{localStorage.setItem(STORAGE,JSON.stringify(project()));persistenceAvailable=true;$('save-state').textContent='✓ 草稿已存於此裝置';$('save-state').classList.add('saved');}
+  catch(e){persistenceAvailable=false;$('save-state').textContent='無法儲存草稿，請下載備份';$('save-state').classList.remove('saved');}
+ }
+ function scheduleSave(){$('save-state').textContent='儲存草稿中…';$('save-state').classList.remove('saved');clearTimeout(draftTimer);draftTimer=setTimeout(saveDraft,400);}
+ function toast(message){$('toast').textContent=message;$('toast').hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>$('toast').hidden=true,3500);}
+ function safeName(s){s=String(s||'main.cpp').replace(/[\\/:*?"<>|\x00-\x1f]/g,'_').trim().slice(0,80);return s||'main.cpp';}
+ function download(content,name,type){
+  const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);
+ }
+ function saveCode(){
+  let name=safeName($('filename').value);if(!/\.(cpp|cc|cxx|c|h|hpp)$/i.test(name))name+='.cpp';
+  $('filename').value=name;download(code.value,name,'text/plain;charset=utf-8');savedCode=code.value;render();saveDraft();toast('已送出下載：'+name);
+ }
+ function backup(){const p=project();download(JSON.stringify(p,null,2),p.name.replace(/\.[^.]+$/,'')+'.cpp-project.json','application/json;charset=utf-8');toast('已送出專案備份下載（含輸入資料）');}
+ function insertText(text,start=code.selectionStart,end=code.selectionEnd,selectionStart=null,selectionEnd=null){
+  lastSnapshot=snapshot();code.setRangeText(text,start,end,'end');
+  if(selectionStart!==null)code.setSelectionRange(selectionStart,selectionEnd===null?selectionStart:selectionEnd);
+  code.focus({preventScroll:true});edited();
+ }
+ function indent(out=false){
+  const start=code.selectionStart,end=code.selectionEnd,s=code.value;
+  const lineStart=start===0?0:s.lastIndexOf('\n',start-1)+1;
+  if(start===end&&!out){const col=start-lineStart;insertText(' '.repeat(4-col%4));return;}
+  const block=s.slice(lineStart,end),lines=block.split('\n');
+  // A selection ending at the next line's start does not indent that following line.
+  const trailing=block.endsWith('\n')&&start!==end;
+  let removedFirst=0,delta=0;
+  const updated=lines.map((line,i)=>{
+   if(trailing&&i===lines.length-1)return line;
+   if(!out){delta+=4;return '    '+line;}
+   const n=(line.match(/^(?: {1,4}|\t)/)||[''])[0].length;if(i===0)removedFirst=n;delta-=n;return line.slice(n);
+  }).join('\n');
+  const newStart=out?Math.max(lineStart,start-removedFirst):start+4;
+  insertText(updated,lineStart,end,newStart,Math.max(newStart,end+delta));
+ }
+ function loadProject(p,fromFile=false){
+  code.value=p.code;$('stdin').value=typeof p.stdin==='string'?p.stdin:'';$('filename').value=safeName(p.name);
+  if(p.provider&&PROVIDERS[p.provider])$('provider').value=p.provider;
+  if(p.fontSize)fontSize=Math.max(minimumFontSize,Math.min(22,Number(p.fontSize)||14));
+  document.documentElement.style.setProperty('--code-size',fontSize+'px');
+  code.scrollTop=code.scrollLeft=0;code.setSelectionRange(0,0);undoStack=[];redoStack=[];lastSnapshot=snapshot();
+  savedCode=fromFile?p.code:null;providerChanged();render();clearResult();setView('code');saveDraft();
+ }
+ function confirmReplace(action){
+  if(code.value.trim()||$('stdin').value.trim()){pendingReplace=action;$('replace-dialog').showModal();}
+  else action();
+ }
+ function setView(view){$('workspace').dataset.view=view;$('view-code').setAttribute('aria-selected',view==='code');$('view-results').setAttribute('aria-selected',view==='results');if(view==='results')$('result-notification').textContent='';if(view==='code')requestAnimationFrame(syncScroll);}
+ function setResultTab(tab){
+  resultTab=tab;$('tab-output').setAttribute('aria-selected',tab==='output');$('tab-errors').setAttribute('aria-selected',tab==='diagnostics');
+  const content=result?(tab==='output'?result.stdout:result.diagnostics):'';
+  $('output').hidden=tab!=='output'||!content;$('diagnostics').hidden=tab!=='diagnostics'||!content;$('empty-state').hidden=!!content;
+  if(!content){$('empty-title').textContent=result?(tab==='output'?'這次沒有標準輸出':'沒有診斷訊息'):'準備好，讓程式跑起來。';$('empty-description').textContent=result?(tab==='output'?'可以使用 cout 將文字或計算結果印在這裡。':'編譯器與程式的錯誤訊息會顯示在這裡。'):'按下「執行程式」，真實編譯後的結果會出現在這裡。';}
+ }
+ function clearResult(){result=null;$('output').textContent='';$('diagnostics').textContent='';$('error-count').textContent='0';status('','等待執行','GNU C++17');setResultTab('output');}
+ function status(kind,text,meta){$('result-status').className='result-status '+kind;$('status-text').textContent=text;$('run-meta').textContent=meta||'';}
+ function showResult(r){
+  result=r;$('output').textContent=r.stdout||'';$('diagnostics').textContent=r.diagnostics||'';
+  $('error-count').textContent=r.diagnostics?'●':'0';status(r.ok?'success':'error',r.label,r.meta);
+  setResultTab(!r.ok&&r.diagnostics?'diagnostics':'output');
+  if($('workspace').dataset.view==='code')$('result-notification').textContent='•';
+ }
+ function providerChanged(){const p=PROVIDERS[$('provider').value];$('provider-link').textContent=p.name;$('provider-link').href=p.url;if(!isRestoring)scheduleSave();}
+ function linesToText(lines){return Array.isArray(lines)?lines.map(x=>typeof x==='string'?x:(x.text||'')).join('\n'):'';}
+ function bounded(s){s=String(s??'').replace(/\x1B\[[0-?]*[ -/]*[@-~]/g,'');return s.length>200000?s.slice(0,200000)+'\n[輸出過長，已截斷]':s;}
+ async function fetchJSON(url,body,signal){
+  const response=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},body:JSON.stringify(body),signal,credentials:'omit',referrerPolicy:'no-referrer'});
+  if(!response.ok)throw new Error(response.status===429?'編譯服務目前限制請求頻率，請稍後再試。':'編譯服務回應 HTTP '+response.status+'。請稍後重試，或自行切換服務。');
+  const text=await response.text();if(text.length>4000000)throw new Error('服務回傳的結果過大，請減少程式輸出。');
+  try{return JSON.parse(text);}catch{throw new Error('編譯服務回傳無法辨識的資料，請稍後重試。');}
+ }
+ async function execute(provider,source,input,signal){
+  if(provider==='wandbox'){
+   const d=await fetchJSON('https://wandbox.org/api/compile.json',{compiler:'gcc-13.2.0',code:source,stdin:input,options:'warning,c++17',save:false},signal);
+   if(d.error)throw new Error(typeof d.error==='string'?d.error:'Wandbox 暫時無法處理此程式。');
+   const compile=String(d.compiler_error||'')+String(d.compiler_output||''),runtime=String(d.program_error||'');
+   const hasStatus=d.status!==undefined&&d.status!==null,ok=hasStatus&&String(d.status)==='0'&&!d.signal;
+   const diagnostics=[compile,runtime,d.signal?'終止訊號：'+d.signal:''].filter(Boolean).join('\n');
+   if(!hasStatus&&!d.signal&&!diagnostics)throw new Error('Wandbox 未回傳執行狀態，請稍後再試。');
+   return {ok,stdout:bounded(d.program_output),diagnostics:bounded(diagnostics),label:ok?'執行完成':d.signal?'程式已被服務終止':'編譯或執行失敗',exit:hasStatus?String(d.status):'—'};
+  }
+  const d=await fetchJSON('https://godbolt.org/api/compiler/g142/compile',{
+   source,compiler:'g142',lang:'c++',allowStoreCodeDebug:false,options:{userArguments:'-std=c++17 -O0 -Wall -Wextra -fdiagnostics-color=never',compilerOptions:{executorRequest:true},executeParameters:{args:[],stdin:input},filters:{execute:true},tools:[],libraries:[]}
+  },signal);
+  if(d.error)throw new Error(typeof d.error==='string'?d.error:'Compiler Explorer 暫時無法處理此程式。');
+  const build=d.buildResult||{},notes=[];
+  if(d.truncated||build.truncated)notes.push('編譯服務已截斷部分輸出。');
+  if(d.timedOut||build.timedOut)notes.push('已達編譯服務的時間限制。');
+  const diagnostics=[linesToText(build.stderr),linesToText(build.stdout),linesToText(d.stderr),...notes].filter(Boolean).join('\n');
+  const didRun=d.didExecute===true,ok=didRun&&d.code===0&&!d.timedOut&&!build.timedOut;
+  if(!didRun&&!diagnostics&&d.code===undefined)throw new Error('Compiler Explorer 未回傳執行狀態。');
+  return {ok,stdout:bounded(didRun?linesToText(d.stdout):''),diagnostics:bounded(diagnostics||(!didRun?'未能執行；請檢查程式碼或稍後再試。':'')),label:ok?'執行完成':didRun?'程式以非零狀態結束':'編譯失敗',exit:d.code??'—'};
+ }
+ async function run(){
+  if(requestController){requestController.abort('user');return;}
+  if(!code.value.trim()){toast('先寫一點程式，再按執行。');code.focus();return;}
+  if(!navigator.onLine){toast('目前未連上網路；連線後才能編譯執行。');return;}
+  const bytes=new TextEncoder();
+  if(bytes.encode(code.value).length>100000||bytes.encode($('stdin').value).length>32000){toast('程式碼上限 100 KB，標準輸入上限 32 KB。');return;}
+  saveDraft();const source=code.value,input=$('stdin').value,provider=$('provider').value,p=PROVIDERS[provider];
+  const controller=new AbortController();requestController=controller;const id=++requestId,start=performance.now();let timeout=false;
+  const timer=setTimeout(()=>{timeout=true;controller.abort('timeout');},45000);
+  $('run-label').textContent='取消等待';$('provider').disabled=true;setView('results');result=null;setResultTab('output');
+  $('empty-title').textContent='正在編譯與執行…';$('empty-description').textContent='由 '+p.name+' 的 '+p.compiler+' 處理，通常需要幾秒鐘。';
+  status('running','正在編譯與執行',p.name);
+  try{
+   const r=await execute(provider,source,input,controller.signal);
+   if(id!==requestId)return;
+   r.meta='退出碼 '+r.exit+' · '+((performance.now()-start)/1000).toFixed(1)+' s（含連線）';
+   if(code.value!==source||$('stdin').value!==input)r.meta+=' · 內容已變更';
+   showResult(r);
+  }catch(e){
+   if(id!==requestId)return;
+   const aborted=controller.signal.aborted;
+   const message=aborted?(timeout?'等待超過 45 秒。遠端工作可能仍在執行，請檢查程式是否有無窮迴圈，或稍後重試。':'已取消等待；這不保證遠端工作立即停止。'):e instanceof TypeError?'無法連接 '+p.name+'。請檢查網路；服務也可能暫時不可用。可以自行切換另一個服務後再執行。':e.message;
+   showResult({ok:false,stdout:'',diagnostics:message,label:aborted?(timeout?'等待逾時':'已取消等待'):'無法完成執行',meta:p.name});
+  }finally{
+   clearTimeout(timer);if(id===requestId){requestController=null;$('run-label').textContent='執行程式';$('provider').disabled=false;}
+  }
+ }
+ code.addEventListener('input',()=>{if(composing){cancelAnimationFrame(paintTimer);paintTimer=requestAnimationFrame(render);}else edited();});
+ code.addEventListener('compositionstart',()=>{composing=true;});
+ code.addEventListener('compositionend',()=>{composing=false;edited();});
+ code.addEventListener('scroll',syncScroll,{passive:true});
+ for(const event of ['click','keyup','select'])code.addEventListener(event,()=>{updateCursor();if(lastSnapshot&&lastSnapshot.value===code.value){lastSnapshot.start=code.selectionStart;lastSnapshot.end=code.selectionEnd;}});
+ code.addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  if(e.key==='Escape'){escapeTab=true;toast('再按 Tab 可離開程式編輯區');return;}
+  if(e.key==='Tab'&&escapeTab){escapeTab=false;return;}
+  escapeTab=false;
+  if(e.key==='Tab'){e.preventDefault();indent(e.shiftKey);}
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.shiftKey?redo():undo();}
+  else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='y'){e.preventDefault();redo();}
+  else if(e.key==='Enter'&&!e.ctrlKey&&!e.metaKey){
+   e.preventDefault();const start=code.selectionStart,end=code.selectionEnd,before=code.value.slice(0,start),line=before.slice(before.lastIndexOf('\n')+1),indentation=(line.match(/^\s*/)||[''])[0],extra=line.trimEnd().endsWith('{')?'    ':'';
+   if(extra&&code.value.slice(end).startsWith('}'))insertText('\n'+indentation+extra+'\n'+indentation,start,end,start+1+indentation.length+extra.length);
+   else insertText('\n'+indentation+extra);
+  }
+ });
+ document.addEventListener('keydown',e=>{
+  if(e.isComposing)return;
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();saveCode();}
+  if((e.ctrlKey||e.metaKey)&&e.key==='Enter'){e.preventDefault();run();}
+ });
+ document.querySelectorAll('.touchbar button').forEach(button=>{
+  button.addEventListener('pointerdown',e=>e.preventDefault());
+  button.addEventListener('click',()=>{
+   if(button.dataset.edit==='indent')indent(false);
+   else if(button.dataset.edit==='outdent')indent(true);
+   else if(button.dataset.edit==='undo')undo();
+   else if(button.dataset.pair){const pair=button.dataset.pair,start=code.selectionStart,end=code.selectionEnd,selected=code.value.slice(start,end);insertText(pair[0]+selected+pair[1],start,end,start+1,start+1+selected.length);}
+   else insertText(button.dataset.insert);
+  });
+ });
+ $('stdin').addEventListener('input',()=>{scheduleSave();if(result&&!requestController)$('run-meta').textContent='輸入已變更，請重新執行';});$('filename').addEventListener('input',scheduleSave);$('filename').addEventListener('change',()=>{$('filename').value=safeName($('filename').value);scheduleSave();});
+ $('provider').addEventListener('change',providerChanged);
+ $('save').addEventListener('click',saveCode);$('backup').addEventListener('click',backup);$('run').addEventListener('click',run);
+ $('load').addEventListener('click',()=>$('file-input').click());
+ $('file-input').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  if(f.size>300000){toast('檔案太大；請選擇 300 KB 以下的文字或專案檔。');return;}
+  try{
+   const text=await f.text();let p;
+   if(/\.json$/i.test(f.name)){
+    p=JSON.parse(text);
+    if(!p||p.format!=='cpp-pocket-studio'||p.version!==1||typeof p.code!=='string'||typeof p.stdin!=='string')throw new Error('這不是支援的 Pocket Studio 專案備份。');
+   }else{if(text.includes('\0'))throw new Error('請選擇 UTF-8 文字格式的 C++ 程式碼檔案。');p={code:text.replace(/^\uFEFF/,'').replace(/\r\n?/g,'\n'),name:f.name,stdin:''};}
+   const bytes=new TextEncoder();if(bytes.encode(p.code).length>100000||bytes.encode(p.stdin||'').length>32000)throw new Error('程式碼上限 100 KB，標準輸入上限 32 KB。');
+   confirmReplace(()=>{loadProject(p,true);toast('已載入 '+f.name);});
+  }catch(error){toast(error instanceof SyntaxError?'JSON 格式不正確，請選擇有效的專案備份。':error.message||'無法讀取檔案。');}
+ });
+ $('examples').addEventListener('change',e=>{const key=e.target.value;e.target.value='';if(key)confirmReplace(()=>{loadProject(EXAMPLES[key]);toast('已載入範例與對應輸入資料');});});
+ $('replace-confirm').addEventListener('click',()=>{const action=pendingReplace;pendingReplace=null;$('replace-dialog').close();if(action)action();});
+ $('replace-cancel').addEventListener('click',()=>{pendingReplace=null;$('replace-dialog').close();});
+ $('replace-backup').addEventListener('click',backup);
+ $('replace-dialog').addEventListener('cancel',()=>{pendingReplace=null;});
+ $('view-code').addEventListener('click',()=>setView('code'));$('view-results').addEventListener('click',()=>setView('results'));
+ $('tab-output').addEventListener('click',()=>setResultTab('output'));$('tab-errors').addEventListener('click',()=>setResultTab('diagnostics'));
+ $('clear-output').addEventListener('click',()=>{if(requestController){toast('請先取消等待，再清除結果。');return;}clearResult();});
+ $('copy-output').addEventListener('click',async()=>{
+  const text=result?(resultTab==='output'?result.stdout:result.diagnostics):'';
+  if(!text){toast('目前沒有可複製的內容');return;}
+  try{if(navigator.clipboard&&window.isSecureContext)await navigator.clipboard.writeText(text);else{const temp=document.createElement('textarea');temp.value=text;temp.style.position='fixed';temp.style.opacity='0';document.body.append(temp);temp.select();if(!document.execCommand('copy'))throw new Error();temp.remove();}toast('已複製至剪貼簿');}
+  catch{toast('此瀏覽器未允許複製；請直接選取結果文字。');}
+ });
+ for(const [id,delta] of [['font-smaller',-1],['font-larger',1]])$(id).addEventListener('click',()=>{fontSize=Math.max(minimumFontSize,Math.min(22,fontSize+delta));document.documentElement.style.setProperty('--code-size',fontSize+'px');scheduleSave();syncScroll();});
+ $('help-button').addEventListener('click',()=>$('help-dialog').showModal());
+ document.querySelectorAll('.close-help').forEach(b=>b.addEventListener('click',()=>$('help-dialog').close()));
+ function network(){const online=navigator.onLine;$('network').classList.toggle('offline',!online);$('network-text').textContent=online?'已連上網路':'離線 · 仍可編輯';$('network').title=online?'裝置已連線，編譯服務狀態以執行結果為準':'離線時仍可編輯與下載，編譯需要網路';}
+ window.addEventListener('online',network);window.addEventListener('offline',network);
+ window.addEventListener('pagehide',saveDraft);document.addEventListener('visibilitychange',()=>{if(document.hidden)saveDraft();});
+ window.addEventListener('beforeunload',e=>{saveDraft();if(!persistenceAvailable){e.preventDefault();e.returnValue='';}});
+ isRestoring=true;
+ let initial=EXAMPLES.sum,restored=false;
+ try{const raw=localStorage.getItem(STORAGE);if(raw){const p=JSON.parse(raw);if(p&&p.format==='cpp-pocket-studio'&&typeof p.code==='string'&&typeof p.stdin==='string'){initial=p;restored=true;}}}catch{}
+ loadProject(initial);isRestoring=false;network();
+ if(restored)$('save-state').textContent='✓ 已還原此裝置的草稿';
+})();
+</script>
+</body>
+</html>
